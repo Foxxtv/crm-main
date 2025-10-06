@@ -16,7 +16,8 @@ const ProspectForm: React.FC<ProspectFormProps> = ({ prospect, onClose, onSave }
     site_web: '',
     score_seo: '',
     message_personnalise: '',
-    email: '', // Ajouté
+    email: '',
+    status: 'Nouveau', // Ajouté
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -30,7 +31,8 @@ const ProspectForm: React.FC<ProspectFormProps> = ({ prospect, onClose, onSave }
         site_web: prospect.site_web || '',
         score_seo: prospect.score_seo?.toString() || '',
         message_personnalise: prospect.message_personnalise || '',
-        email: prospect.email || '', // Ajouté
+        email: prospect.email || '',
+        status: prospect.status || 'Nouveau', // Ajouté
       });
     }
   }, [prospect]);
@@ -51,7 +53,8 @@ const ProspectForm: React.FC<ProspectFormProps> = ({ prospect, onClose, onSave }
         site_web: formData.site_web || null,
         score_seo: formData.score_seo ? parseInt(formData.score_seo) : null,
         message_personnalise: formData.message_personnalise || null,
-        email: formData.email || null, // Ajouté
+        email: formData.email || null,
+        status: formData.status, // Ajouté
         user_id: user.id,
         updated_at: new Date().toISOString(),
       };
@@ -192,6 +195,20 @@ const ProspectForm: React.FC<ProspectFormProps> = ({ prospect, onClose, onSave }
                 className="w-full border border-gray-300 rounded-lg px-3 py-2"
                 placeholder="Email du prospect"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Statut</label>
+              <select
+                value={formData.status}
+                onChange={e => setFormData({ ...formData, status: e.target.value })}
+                className="w-full border border-gray-300 rounded-lg px-3 py-2"
+              >
+                <option value="Nouveau">Nouveau</option>
+                <option value="Refusé">Refusé</option>
+                <option value="Validé">Validé</option>
+                <option value="Pas de réponse">Pas de réponse</option>
+              </select>
             </div>
 
             {error && (

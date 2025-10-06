@@ -15,6 +15,7 @@ interface Prospect {
   updated_at: string;
   user_id: string; // Ajouté pour audit SEO
   email: string | null; // Ajouté
+  status: string; // Ajouté
 }
 
 const ProspectManager = () => {
@@ -214,7 +215,6 @@ const ProspectManager = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Site Web
                 </th>
-                {/* NOUVELLE COLONNE DANS LE HEADER */}
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Message Personnalisé
                 </th>
@@ -226,6 +226,9 @@ const ProspectManager = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Email
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Statut
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -273,6 +276,17 @@ const ProspectManager = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                     {prospect.email || '-'}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      prospect.status === 'Nouveau' ? 'bg-gray-200 text-gray-700' :
+                      prospect.status === 'Refusé' ? 'bg-red-100 text-red-700' :
+                      prospect.status === 'Validé' ? 'bg-green-100 text-green-700' :
+                      prospect.status === 'Pas de réponse' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {prospect.status}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
@@ -354,6 +368,18 @@ const ProspectManager = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700">Email</label>
                     <p className="text-gray-900">{selectedProspect.email || <span className="text-gray-400">(aucun email renseigné)</span>}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Statut</label>
+                    <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                      selectedProspect.status === 'Nouveau' ? 'bg-gray-200 text-gray-700' :
+                      selectedProspect.status === 'Refusé' ? 'bg-red-100 text-red-700' :
+                      selectedProspect.status === 'Validé' ? 'bg-green-100 text-green-700' :
+                      selectedProspect.status === 'Pas de réponse' ? 'bg-yellow-100 text-yellow-700' :
+                      'bg-gray-100 text-gray-700'
+                    }`}>
+                      {selectedProspect.status}
+                    </span>
                   </div>
                 </div>
                 
