@@ -17,7 +17,8 @@ const ProspectForm: React.FC<ProspectFormProps> = ({ prospect, onClose, onSave }
     score_seo: '',
     message_personnalise: '',
     email: '',
-    status: 'Nouveau', // Ajouté
+    status: 'Nouveau',
+    notes: '', // Ajouté
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -32,7 +33,8 @@ const ProspectForm: React.FC<ProspectFormProps> = ({ prospect, onClose, onSave }
         score_seo: prospect.score_seo?.toString() || '',
         message_personnalise: prospect.message_personnalise || '',
         email: prospect.email || '',
-        status: prospect.status || 'Nouveau', // Ajouté
+        status: prospect.status || 'Nouveau',
+        notes: prospect.notes || '', // Ajouté
       });
     }
   }, [prospect]);
@@ -54,7 +56,8 @@ const ProspectForm: React.FC<ProspectFormProps> = ({ prospect, onClose, onSave }
         score_seo: formData.score_seo ? parseInt(formData.score_seo) : null,
         message_personnalise: formData.message_personnalise || null,
         email: formData.email || null,
-        status: formData.status, // Ajouté
+        status: formData.status,
+        notes: formData.notes || null, // Ajouté
         user_id: user.id,
         updated_at: new Date().toISOString(),
       };
@@ -209,6 +212,17 @@ const ProspectForm: React.FC<ProspectFormProps> = ({ prospect, onClose, onSave }
                 <option value="Validé">Validé</option>
                 <option value="Pas de réponse">Pas de réponse</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+              <textarea
+                value={formData.notes}
+                onChange={e => setFormData({ ...formData, notes: e.target.value })}
+                rows={2}
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                placeholder="Notes internes, remarques, etc."
+              />
             </div>
 
             {error && (

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { Plus, Search, Edit, Trash2, Eye, Filter } from 'lucide-react';
 import ProspectForm from './ProspectForm';
+import ProspectsBoxView from './ProspectsBoxView';
 
 interface Prospect {
   id: string;
@@ -16,6 +17,7 @@ interface Prospect {
   user_id: string; // Ajouté pour audit SEO
   email: string | null; // Ajouté
   status: string; // Ajouté
+  notes?: string | null; // Ajouté
 }
 
 const ProspectManager = () => {
@@ -31,6 +33,7 @@ const ProspectManager = () => {
   const [loadingRapport, setLoadingRapport] = useState(false);
   const [auditLoading, setAuditLoading] = useState(false);
   const [auditResponse, setAuditResponse] = useState<string | null>(null);
+  const [boxView, setBoxView] = useState(false); // Ajout d'un état pour la navigation entre les vues
 
   useEffect(() => {
     loadProspects();
@@ -175,6 +178,15 @@ const ProspectManager = () => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Gestion des Prospects</h1>
+        <div className="flex gap-2">
+        <button
+          onClick={() => setBoxView(false)}
+          className={`px-4 py-2 rounded-lg ${!boxView ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'} transition-colors`}
+        >Vue Tableau</button>
+        <button
+          onClick={() => setBoxView(true)}
+          className={`px-4 py-2 rounded-lg ${boxView ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700'} transition-colors`}
+        >Vue Cartes</button>
         <button
           onClick={() => setShowForm(true)}
           className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2 transition-colors"
@@ -182,6 +194,7 @@ const ProspectManager = () => {
           <Plus className="w-4 h-4" />
           <span>Nouveau Prospect</span>
         </button>
+        </div>
       </div>
 
       {/* Filters */}
@@ -201,11 +214,19 @@ const ProspectManager = () => {
       </div>
 
       {/* Prospects Table */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
+      {boxView ? (
+        <ProspectsBoxView
+          prospects={filteredProspects}
+          onView={setSelectedProspect}
+          onEdit={(prospect) => { setEditingProspect(prospect); setShowForm(true); }}
+          onDelete={deleteProspect}
+        />
+      ) : (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-10">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50 border-b border-gray-200">
+                <tr>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nom
                 </th>
@@ -229,6 +250,9 @@ const ProspectManager = () => {
                 </th>
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Statut
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Notes
                 </th>
                 <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Actions
@@ -288,6 +312,9 @@ const ProspectManager = () => {
                       {prospect.status}
                     </span>
                   </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 max-w-xs">
+                    <span className="truncate block">{prospect.notes || '—'}</span>
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <div className="flex items-center justify-end space-x-2">
                       <button
@@ -323,7 +350,8 @@ const ProspectManager = () => {
             </div>
           )}
         </div>
-      </div>
+        </div>
+      )}
 
       {/* Prospect Form Modal */}
       {showForm && (
@@ -344,33 +372,34 @@ const ProspectManager = () => {
       {/* Prospect Details Modal */}
       {selectedProspect && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-bold text-gray-900">Détails du Prospect</h2>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-gray-200">
+            <div className="p-8">
+              <div className="flex items-center justify-between mb-8">
+                <h2 className="text-2xl font-bold text-gray-900">Détails du Prospect</h2>
                 <button
                   onClick={() => setSelectedProspect(null)}
-                  className="text-gray-500 hover:text-gray-700"
+                  className="text-gray-400 hover:text-gray-600 text-2xl font-bold focus:outline-none"
+                  aria-label="Fermer"
                 >
                   ×
                 </button>
               </div>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-8">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Nom</label>
-                    <p className="text-gray-900">{selectedProspect.nom}</p>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Nom</label>
+                    <div className="text-gray-900 text-base font-medium">{selectedProspect.nom}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Téléphone</label>
-                    <p className="text-gray-900">{selectedProspect.telephone || '-'}</p>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Téléphone</label>
+                    <div className="text-gray-900 text-base">{selectedProspect.telephone || '-'}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Email</label>
-                    <p className="text-gray-900">{selectedProspect.email || <span className="text-gray-400">(aucun email renseigné)</span>}</p>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Email</label>
+                    <div className="text-gray-900 text-base">{selectedProspect.email || <span className="text-gray-400">(aucun email renseigné)</span>}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Statut</label>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Statut</label>
                     <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                       selectedProspect.status === 'Nouveau' ? 'bg-gray-200 text-gray-700' :
                       selectedProspect.status === 'Refusé' ? 'bg-red-100 text-red-700' :
@@ -381,57 +410,47 @@ const ProspectManager = () => {
                       {selectedProspect.status}
                     </span>
                   </div>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Adresse</label>
-                    <p className="text-gray-900">{selectedProspect.adresse || '-'}</p>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Adresse</label>
+                    <div className="text-gray-900 text-base">{selectedProspect.adresse || '-'}</div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Site Web</label>
-                    <p className="text-gray-900">
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Site Web</label>
+                    <div className="text-gray-900 text-base">
                       {selectedProspect.site_web ? (
-                        <a href={selectedProspect.site_web} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800">
+                        <a href={selectedProspect.site_web} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 underline">
                           {selectedProspect.site_web}
                         </a>
                       ) : '-'}
-                    </p>
-                  </div>
-                </div>
-                
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Score SEO</label>
-                  <p className="text-gray-900">
-                    {selectedProspect.score_seo !== null ? `${selectedProspect.score_seo}/100` : '-'}
-                  </p>
-                </div>
-                
-                {/* Affichage du Message Personnalisé dans la modale */}
-                <div>
-                  <label className="block text-sm font-medium text-gray-700">Message Personnalisé</label>
-                  <p className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap">
-                        {selectedProspect.message_personnalise || 'Aucun message.'}
-                    </p>
-                </div>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700">Créé le</label>
-                    <p className="text-gray-900">
-                      {new Date(selectedProspect.created_at).toLocaleString('fr-FR')}
-                    </p>
+                    </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Modifié le</label>
-                    <p className="text-gray-900">
-                      {new Date(selectedProspect.updated_at).toLocaleString('fr-FR')}
-                    </p>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Score SEO</label>
+                    <div className="text-gray-900 text-base">{selectedProspect.score_seo !== null ? `${selectedProspect.score_seo}/100` : '-'}</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Créé le</label>
+                    <div className="text-gray-900 text-base">{new Date(selectedProspect.created_at).toLocaleString('fr-FR')}</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Modifié le</label>
+                    <div className="text-gray-900 text-base">{new Date(selectedProspect.updated_at).toLocaleString('fr-FR')}</div>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Message Personnalisé</label>
+                    <div className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap min-h-[32px]">{selectedProspect.message_personnalise || 'Aucun message.'}</div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Notes</label>
+                    <div className="text-gray-900 bg-gray-50 p-3 rounded-lg whitespace-pre-wrap min-h-[32px]">{selectedProspect.notes || 'Aucune note.'}</div>
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Rapport Markdown</label>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase mb-1">Rapport Markdown</label>
                   {loadingRapport ? (
                     <div>Chargement du rapport...</div>
                   ) : rapportMarkdown ? (
@@ -480,7 +499,7 @@ const ProspectManager = () => {
                 </div>
                 {emailResponse && (
                   <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Réponse du workflow N8N :</label>
+                    <label className="block text-xs font-semibold text-gray-500 mb-1">Réponse du workflow N8N :</label>
                     <pre className="bg-gray-100 p-3 rounded text-xs overflow-x-auto max-h-64">{emailResponse}</pre>
                   </div>
                 )}
@@ -490,6 +509,7 @@ const ProspectManager = () => {
           </div>
         </div>
       )}
+      {/* Prospects Box View */}
     </div>
   );
 };
